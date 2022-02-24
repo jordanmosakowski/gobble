@@ -344,15 +344,10 @@ Future<void> showResetDialog() async {
       builder: (BuildContext context){
         return AlertDialog(
           title: Text("Your score was $score"),
-          content: ListView.builder(
-              padding: const EdgeInsets.all(8),
-                itemCount: saves.length,
-                itemBuilder: (BuildContext context, int index) {
-              return Text(saves[index].word);
-            }
-          ),
-
-
+          content: Column(children: [
+            for(FoundWord w in saves)
+              Text(w.word)
+          ],),
           actions: <Widget>[
             TextButton(
               child: const Text("Play Again"),
