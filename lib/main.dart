@@ -1,5 +1,6 @@
 import 'dart:math';
 
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/scheduler.dart';
 import 'package:flutter/services.dart';
@@ -23,7 +24,10 @@ void main() async {
 
 Future<String> loadWords(int len) async {
   // return await rootBundle.loadString('Words.txt');
-  return await rootBundle.loadString('$len.txt');
+  if(kDebugMode){
+    return await rootBundle.loadString('$len.txt');
+  }
+  return await rootBundle.loadString('assets/$len.txt');
 }
 
 class MyApp extends StatelessWidget {
@@ -227,6 +231,7 @@ Future<void> showResetDialog() async {
     if(highScore==0){
       SchedulerBinding.instance?.addPostFrameCallback((_) => _showMyDialog());
     }
+    findWords();
   }
 
   List<FoundWord> findLen(int targetSize){
@@ -281,23 +286,21 @@ Future<void> showResetDialog() async {
       checkLoss();
       return;
     }
-    setState(() {
-      for(FoundWord found in foundWords){
-        if(found.word.length>4){
-          score += (found.word.length-3);
-        }
-        if(found.row){
-          for(int i=found.start; i<found.end; i++){
-            grid[i] = null;
-          }
-        }
-        else{
-          for(int i=found.start; i<found.end; i+=gridSize){
-            grid[i] = null;
-          }
+    for(FoundWord found in foundWords){
+      if(found.word.length>4){
+        score += (found.word.length-3);
+      }
+      if(found.row){
+        for(int i=found.start; i<found.end; i++){
+          grid[i] = null;
         }
       }
-    });
+      else{
+        for(int i=found.start; i<found.end; i+=gridSize){
+          grid[i] = null;
+        }
+      }
+    }
 
     save();
     // SnackBar snackBar = SnackBar(
@@ -386,11 +389,11 @@ Future<void> showResetDialog() async {
                               setState(() {
                                 grid[i] = nextLetters.removeAt(0);
                                 score++;
+                                nextLetters.add(chooseLetter());
+                                findWords();
                                 if(score>(widget.prefs.getInt("highScore") ?? 0)){
                                   widget.prefs.setInt("highScore", score);
                                 }
-                                nextLetters.add(chooseLetter());
-                                findWords();
                               });
                             }),
                         ],
