@@ -46,6 +46,59 @@ class _HomeState extends State<Home> {
 
   late String nextLetter;
 
+  Future<void> _showMyDialog() async {
+  return showDialog<void>(
+    context: context,
+    barrierDismissible: false, // user must tap button!
+    builder: (BuildContext context) {
+      return AlertDialog(
+        title: const Text('Gobble: An 8x8 Grid Word Game',
+        style: TextStyle(fontSize: 30, fontWeight: FontWeight.bold),
+        
+        textAlign: TextAlign.center,
+        ),
+        content: SingleChildScrollView(
+          child: ListBody(
+            children: const <Widget>[
+              Text(
+                'How To Play',
+                style: TextStyle(fontSize: 25, color: Color.fromARGB(255, 255, 255, 255), fontWeight: FontWeight.bold,),
+                textAlign: TextAlign.center,
+                
+                ),
+              Text('1.You Will Be Given A Letter To Place In The Grid',
+              style: TextStyle(fontSize: 15),
+              
+              ),
+              Text('2. Place The Letter In A Grid Space',
+              style: TextStyle(fontSize: 15),
+              
+              ),
+              Text('3. Create 5 Letter Words To Score Points',
+              style: TextStyle(fontSize: 15),
+              )
+            ],
+          ),
+        ),
+        actions: <Widget>[
+          TextButton(
+           style: TextButton.styleFrom(
+    primary: Colors.greenAccent, // Text Color
+  ),
+            child: const Text('Begin',
+            style: TextStyle(fontSize: 20),
+            ),
+            
+            onPressed: () {
+              Navigator.of(context).pop();
+            },
+          ),
+        ],
+      );
+    },
+  );
+}
+
   @override
   void initState() {
     // TODO: implement initState
@@ -58,6 +111,7 @@ class _HomeState extends State<Home> {
     return Scaffold(
       appBar: AppBar(
         title: const Text('Gobble'),
+        leading:IconButton(onPressed: _showMyDialog, icon: Icon(Icons.help))
       ),
       body: Padding(
         padding: const EdgeInsets.only(top: 25.0),
