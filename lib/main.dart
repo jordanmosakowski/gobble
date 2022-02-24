@@ -57,7 +57,7 @@ class Home extends StatefulWidget {
 }
 
 class _HomeState extends State<Home> {
-  int gridSize = 8;
+  int gridSize = 7;
   late List<String?> grid;
 
   List<String> letters = "abcdefghijklmnopqrstuvwxyz".split("");
@@ -103,7 +103,7 @@ class _HomeState extends State<Home> {
     barrierDismissible: false, // user must tap button!
     builder: (BuildContext context) {
       return AlertDialog(
-        title: const Text('Gobble: An 8x8 Grid Word Game',
+        title: const Text('Gobble: An 7x7 Grid Word Game',
         style: TextStyle(fontSize: 30, fontWeight: FontWeight.bold),
         
         textAlign: TextAlign.center,
@@ -203,21 +203,22 @@ Future<void> showResetDialog() async {
   );
 }
 
-
-
-
   @override
   void initState() {
     super.initState();
     grid = List.filled(gridSize*gridSize, null);
+    score = widget.prefs.getInt("save_score") ?? 0;
+    nextLetters = widget.prefs.getStringList("save_nextLetters") ?? [];
     if(widget.prefs.getStringList("save_grid") !=null){
       List<String> tempGrid = widget.prefs.getStringList("save_grid") ?? [];
       if(tempGrid.length == gridSize * gridSize){
         grid = tempGrid.map((s) => s=="0" ? null : s).toList();
       }
+      else{
+        score = 0;
+        nextLetters = [];
+      }
     }
-    score = widget.prefs.getInt("save_score") ?? 0;
-    nextLetters = widget.prefs.getStringList("save_nextLetters") ?? [];
     if(nextLetters.length!=3){
       nextLetters = [chooseLetter(), chooseLetter(), chooseLetter()];
     }
@@ -274,7 +275,7 @@ Future<void> showResetDialog() async {
   }
 
   void findWords(){
-    List<FoundWord> foundWords = [...findLen(4),...findLen(5),...findLen(6),...findLen(7),...findLen(8)];
+    List<FoundWord> foundWords = [...findLen(4),...findLen(5),...findLen(6),...findLen(7)];
     if(foundWords.isEmpty){
       save();
       checkLoss();
@@ -444,7 +445,16 @@ class WordTile extends StatelessWidget {
           border: Border.all(color: Colors.white),
         ),
         child: Center(
-          child: Text(letter?.toUpperCase() ?? "", style: TextStyle(fontSize: fontSize)),
+          child: AnimatedSwitcher(
+            duration: const Duration(milliseconds: 250),
+            transitionBuilder: (Widget child, Animation<double> animation) {
+              return ScaleTransition(scale: animation, child: child);
+            },
+            child: Text(
+              letter?.toUpperCase() ?? "", style: TextStyle(fontSize: fontSize),
+              key: ValueKey<String>(letter ?? ""),
+            )
+          ),
         ),
       ),
     ); 
