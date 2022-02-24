@@ -10,23 +10,25 @@ import 'package:shared_preferences/shared_preferences.dart';
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   final SharedPreferences prefs = await SharedPreferences.getInstance();
-  final List<String> words = (await loadWords()).split('\n');
-  for(int i = 0; i < words.length; i++) {
-    words[i] = words[i].toLowerCase();
-  }
-  words.sort();
+  final Map<int,List<String>> words = {
+    4: (await loadWords(4)).split('\n'),
+    5: (await loadWords(5)).split('\n'),
+    6: (await loadWords(6)).split('\n'),
+    7: (await loadWords(7)).split('\n'),
+    8: (await loadWords(8)).split('\n'),
+  };
   print(words.length);
   runApp(MyApp(words,prefs));
 }
 
-Future<String> loadWords() async {
+Future<String> loadWords(int len) async {
   // return await rootBundle.loadString('Words.txt');
-  return wordsStr;
+  return await rootBundle.loadString('$len.txt');
 }
 
 class MyApp extends StatelessWidget {
   MyApp(this.words,this.prefs,{Key? key}) : super(key: key);
-  final List<String> words;
+  final Map<int,List<String>> words;
   SharedPreferences prefs;
   @override
   Widget build(BuildContext context) {
@@ -47,7 +49,7 @@ class MyApp extends StatelessWidget {
 
 class Home extends StatefulWidget {
   Home(this.words,this.prefs,{ Key? key }) : super(key: key);
-  List<String> words;
+  Map<int,List<String>> words;
   SharedPreferences prefs;
 
   @override
@@ -185,6 +187,14 @@ Future<void> showResetDialog() async {
             
             onPressed: () {
               Navigator.of(context).pop();
+              setState(() {
+                score = 0;
+                grid = List.filled(gridSize*gridSize, null);
+                nextLetters = [chooseLetter(), chooseLetter(), chooseLetter()];
+                widget.prefs.remove("save_grid");
+                widget.prefs.remove("save_nextLetters");
+                widget.prefs.remove("save_score");
+              });
             },
           ),
         ],
@@ -216,7 +226,6 @@ Future<void> showResetDialog() async {
     if(highScore==0){
       SchedulerBinding.instance?.addPostFrameCallback((_) => _showMyDialog());
     }
-
   }
 
   List<FoundWord> findLen(int targetSize){
@@ -227,7 +236,7 @@ Future<void> showResetDialog() async {
         List<String?> letters = grid.sublist(i*gridSize+j, i*gridSize+j+targetSize);
         if(!letters.contains(null)){
           String word = letters.join();
-          if(widget.words.contains(word)){
+          if(wordSearch(widget.words[targetSize] ?? [],word)){
             print("FOUND: $word");
             foundWords.add(FoundWord(true,word, i*gridSize+j, i*gridSize+j+targetSize));
           }
@@ -237,7 +246,7 @@ Future<void> showResetDialog() async {
         letters = List.generate(targetSize, (k) => grid[(j+k)*gridSize + i]);
         if(!letters.contains(null)){
           String word = letters.join();
-          if(widget.words.contains(word)){
+          if(wordSearch(widget.words[targetSize] ?? [],word)){
             print("FOUND: $word");
             foundWords.add(FoundWord(false,word, j*gridSize+i, (j+targetSize)*gridSize + i));
           }
@@ -247,8 +256,25 @@ Future<void> showResetDialog() async {
     return foundWords;
   }
 
+  bool wordSearch(List<String> arr, word){
+    int low = 0;
+    int high = arr.length-1;
+    while(low<=high){
+      int mid = ((low+high)/2).floor();
+      if(arr[mid]==word){
+        return true;
+      }
+      if(arr[mid].compareTo(word)>0){
+        high = mid-1;
+      }else{
+        low = mid+1;
+      }
+    }
+    return false;
+  }
+
   void findWords(){
-    List<FoundWord> foundWords = [...findLen(4),...findLen(5)];
+    List<FoundWord> foundWords = [...findLen(4),...findLen(5),...findLen(6),...findLen(7),...findLen(8)];
     if(foundWords.isEmpty){
       save();
       checkLoss();
@@ -256,6 +282,9 @@ Future<void> showResetDialog() async {
     }
     setState(() {
       for(FoundWord found in foundWords){
+        if(found.word.length>4){
+          score += (found.word.length-3);
+        }
         if(found.row){
           for(int i=found.start; i<found.end; i++){
             grid[i] = null;
@@ -302,8 +331,7 @@ Future<void> showResetDialog() async {
                   showedLoseDialog = false;
                   score = 0;
                   grid = List.filled(gridSize*gridSize, null);
-                  nextLetters.removeAt(0);
-                  nextLetters.add(chooseLetter());
+                  nextLetters = [chooseLetter(), chooseLetter(), chooseLetter()];
                 });
               },
             ),
@@ -318,14 +346,9 @@ Future<void> showResetDialog() async {
     return Scaffold(
       appBar: AppBar(
         title: const Text('Gobble'),
-        leading:IconButton(onPressed: _showMyDialog, icon: Icon(Icons.help)),
+        leading:IconButton(onPressed: _showMyDialog, icon: const Icon(Icons.help)),
         actions: [
-          IconButton(onPressed: showResetDialog, icon: Icon(Icons.refresh)),
-          Padding(
-            padding: const EdgeInsets.only(right: 8.0),
-            child: Center(child: Text("High score: ${widget.prefs.getInt("highScore") ?? 0}", style: Theme.of(context).textTheme.headline6,)),
-          ),
-          
+          IconButton(onPressed: showResetDialog, icon: const Icon(Icons.refresh)),
         ],
       ),
       body: Padding(
@@ -335,8 +358,13 @@ Future<void> showResetDialog() async {
           children: [
             Text(
               "Score: $score",
-              style: Theme.of(context).textTheme.headline4,
+              style: Theme.of(context).textTheme.headline4!.copyWith(
+                color: Colors.white
+              ),
             ),
+            Center(child: Text("High score: ${widget.prefs.getInt("highScore") ?? 0}", style: Theme.of(context).textTheme.headline6!.copyWith(
+              color: Colors.white70
+            ),)),
             Expanded(
               child: Center(
                 child: LayoutBuilder(
