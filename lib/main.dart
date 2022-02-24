@@ -70,7 +70,7 @@ class _HomeState extends State<Home> {
     // return consanants[Random().nextInt(consanants.length)];
   }
 
-  late String nextLetter;
+  late List<String> nextLetters;
 
   Future<void> _showMyDialog() async {
   return showDialog<void>(
@@ -100,7 +100,7 @@ class _HomeState extends State<Home> {
               style: TextStyle(fontSize: 15),
               
               ),
-              Text('3. Create 5 Letter Words To Score Points',
+              Text('3. Create 5 Letter Words To Remove Letters from the Grid',
               style: TextStyle(fontSize: 15),
               )
             ],
@@ -128,7 +128,7 @@ class _HomeState extends State<Home> {
   @override
   void initState() {
     super.initState();
-    nextLetter = chooseLetter();
+    nextLetters = [chooseLetter(), chooseLetter(), chooseLetter()];
     grid = List.filled(gridSize*gridSize, null);;
   }
 
@@ -204,7 +204,8 @@ class _HomeState extends State<Home> {
                   showedLoseDialog = false;
                   score = 0;
                   grid = List.filled(gridSize*gridSize, null);
-                  nextLetter = chooseLetter();
+                  nextLetters.removeAt(0);
+                  nextLetters.add(chooseLetter());
                 });
               },
             ),
@@ -230,33 +231,59 @@ class _HomeState extends State<Home> {
               "Score: $score",
               style: Theme.of(context).textTheme.headline4,
             ),
-            Center(
-              child: SizedBox(
-                width: 500,
-                height: 500,
-                child: GridView.count(
-                  crossAxisCount: gridSize,
-                  children: [
-                    for(int i=0; i<grid.length; i++)
-                      WordTile(grid[i],(){
-                        if(grid[i]!=null){
-                          return;
-                        }
-                        setState(() {
-                          grid[i] = nextLetter;
-                          score++;
-                          nextLetter = chooseLetter();
-                          findWords();
-                        });
-                      }),
-                  ],
-                )
+            Expanded(
+              child: Center(
+                child: LayoutBuilder(
+                  builder: (context, BoxConstraints constraints) {
+                    double size = max(min(min(constraints.maxWidth,
+                           constraints.maxHeight),600),150);
+                    return SizedBox(
+                      width: size,
+                      height: size,
+                      child: GridView.count(
+                        crossAxisCount: gridSize,
+                        children: [
+                          for(int i=0; i<grid.length; i++)
+                            WordTile(grid[i],size/12,(){
+                              if(grid[i]!=null){
+                                return;
+                              }
+                              setState(() {
+                                grid[i] = nextLetters.removeAt(0);
+                                score++;
+                                nextLetters.add(chooseLetter());
+                                findWords();
+                              });
+                            }),
+                        ],
+                      )
+                    );
+                  }
+                ),
               ),
             ),
-            Text(
-              nextLetter.toUpperCase(),
-              style: Theme.of(context).textTheme.headline2,
+            Padding(
+              padding: const EdgeInsets.all(8.0),
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                crossAxisAlignment: CrossAxisAlignment.end,
+                children: [
+                  Text(
+                    nextLetters.first.toUpperCase(),
+                    style: Theme.of(context).textTheme.headline2,
+                  ),
+                  Container(width:10),
+                  Text(
+                    nextLetters[1].toUpperCase(),
+                  ),
+                  Container(width:10),
+                  Text(
+                    nextLetters[2].toUpperCase(),
+                  ),
+                ],
+              ),
             ),
+            
           ],
         ),
       )
@@ -265,8 +292,9 @@ class _HomeState extends State<Home> {
 }
 
 class WordTile extends StatelessWidget {
-  const WordTile(this.letter,this.onTap);
+  const WordTile(this.letter,this.fontSize,this.onTap);
   final String? letter;
+  final double fontSize;
   final VoidCallback onTap;
 
   @override
@@ -279,7 +307,7 @@ class WordTile extends StatelessWidget {
           border: Border.all(color: Colors.white),
         ),
         child: Center(
-          child: Text(letter?.toUpperCase() ?? "", style: Theme.of(context).textTheme.headline3),
+          child: Text(letter?.toUpperCase() ?? "", style: TextStyle(fontSize: fontSize)),
         ),
       ),
     ); 
