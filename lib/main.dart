@@ -7,6 +7,9 @@ import 'package:gobble/words.dart';
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   final List<String> words = (await loadWords()).split('\n');
+  for(int i = 0; i < words.length; i++) {
+    words[i] = words[i].toLowerCase();
+  }
   words.sort();
   print(words.length);
   runApp(MyApp(words));
@@ -129,10 +132,8 @@ class _HomeState extends State<Home> {
     grid = List.filled(gridSize*gridSize, null);;
   }
 
-  void findWords(){
+  List<FoundWord> findLen(int targetSize){
     List<FoundWord> foundWords = [];
-    print("FINDING WORDS");
-    int targetSize = 5;
     for(int i=0; i<gridSize; i++){
       for(int j=0; j<gridSize-targetSize+1; j++){
         //Words in row;
@@ -156,6 +157,11 @@ class _HomeState extends State<Home> {
         }
       }
     }
+    return foundWords;
+  }
+
+  void findWords(){
+    List<FoundWord> foundWords = [...findLen(4),...findLen(5)];
     if(foundWords.isEmpty){
       checkLoss();
       return;

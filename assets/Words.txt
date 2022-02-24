@@ -13106,7 +13106,6 @@ Wood
 Word
 Work
 Year
-Four Letter Pronouns
 Dese
 Enuf
 Feel
@@ -13140,7 +13139,6 @@ When
 Whom
 Yere
 Your
-Four Letter Verbs
 Bear
 Beat
 Blow
@@ -13257,7 +13255,6 @@ Wear
 Will
 Wish
 Work
-Four Letter Adjectives
 Able
 Back
 Bare
@@ -13362,7 +13359,6 @@ Wide
 Wild
 Wise
 Zero
-Four Letter Conjunctions
 Both
 Else
 Ergo
@@ -13380,9 +13376,7 @@ Thou
 Till
 Unto
 When
-Four Letter Articles
 Some
-Four Letter Adverbs
 Ably
 Afar
 Anew
@@ -13435,7 +13429,6 @@ Thus
 Very
 When
 Wide
-Four Letter Prepositions
 Ajax
 Amid
 Anti
@@ -13472,7 +13465,6 @@ Upon
 Vice
 Whiz
 With
-Four Letter Interjections
 Ahem
 Ahoy
 Alas
