@@ -12,13 +12,18 @@ void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   final SharedPreferences prefs = await SharedPreferences.getInstance();
   final Map<int,List<String>> words = {
-    4: (await loadWords(4)).split('\n'),
-    5: (await loadWords(5)).split('\n'),
-    6: (await loadWords(6)).split('\n'),
-    7: (await loadWords(7)).split('\n'),
-    8: (await loadWords(8)).split('\n'),
+    4: (await loadWords(4)).split(','),
+    5: (await loadWords(5)).split(','),
+    6: (await loadWords(6)).split(','),
+    7: (await loadWords(7)).split(','),
+    8: (await loadWords(8)).split(','),
   };
-  print(words.length);
+  for(String w in words[4]!){
+    if(w.length!=4){
+      print("INVALID $w");
+    }
+  }
+  print(words[4]!.length);
   runApp(MyApp(words,prefs));
 }
 
@@ -160,7 +165,6 @@ class _HomeState extends State<Home> {
 Future<void> showResetDialog() async {
   return showDialog<void>(
     context: context,
-    barrierDismissible: false, // user must tap button!
     builder: (BuildContext context) {
       return AlertDialog(
         title: const Text('Are You Sure You Want To Reset?',
@@ -181,6 +185,12 @@ Future<void> showResetDialog() async {
           ),
         ),
         actions: <Widget>[
+          TextButton(
+            child: Text("Cancel"),
+            onPressed: () {
+              Navigator.of(context).pop();
+            }
+          ),
           TextButton(
            style: TextButton.styleFrom(
     primary: Colors.yellowAccent, // Text Color
@@ -232,6 +242,7 @@ Future<void> showResetDialog() async {
       SchedulerBinding.instance?.addPostFrameCallback((_) => _showMyDialog());
     }
     findWords();
+    print(wordSearch(widget.words[5]!,"rope"));
   }
 
   List<FoundWord> findLen(int targetSize){
@@ -263,14 +274,18 @@ Future<void> showResetDialog() async {
   }
 
   bool wordSearch(List<String> arr, word){
+    // print("List has ${arr.length} words");
+    // print(arr[5000].codeUnitAt(4));
+    // return arr.contains("rope");
     int low = 0;
     int high = arr.length-1;
     while(low<=high){
       int mid = ((low+high)/2).floor();
-      if(arr[mid]==word){
+      int comp = arr[mid].compareTo(word);
+      if(comp==0){
         return true;
       }
-      if(arr[mid].compareTo(word)>0){
+      if(comp>0){
         high = mid-1;
       }else{
         low = mid+1;
@@ -279,6 +294,9 @@ Future<void> showResetDialog() async {
     return false;
   }
 
+  List<FoundWord> saves = [];
+
+
   void findWords(){
     List<FoundWord> foundWords = [...findLen(4),...findLen(5),...findLen(6),...findLen(7)];
     if(foundWords.isEmpty){
@@ -286,6 +304,7 @@ Future<void> showResetDialog() async {
       checkLoss();
       return;
     }
+    saves = saves + foundWords;
     for(FoundWord found in foundWords){
       if(found.word.length>4){
         score += (found.word.length-3);
@@ -324,8 +343,16 @@ Future<void> showResetDialog() async {
       context: context,
       builder: (BuildContext context){
         return AlertDialog(
-          title: const Text("You Lose!"),
-          content: Text("Your score is $score"),
+          title: Text("Your score was $score"),
+          content: ListView.builder(
+              padding: const EdgeInsets.all(8),
+                itemCount: saves.length,
+                itemBuilder: (BuildContext context, int index) {
+              return Text(saves[index].word);
+            }
+          ),
+
+
           actions: <Widget>[
             TextButton(
               child: const Text("Play Again"),
