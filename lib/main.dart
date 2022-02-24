@@ -18,12 +18,6 @@ void main() async {
     7: (await loadWords(7)).split(','),
     8: (await loadWords(8)).split(','),
   };
-  for(String w in words[4]!){
-    if(w.length!=4){
-      print("INVALID $w");
-    }
-  }
-  print(words[4]!.length);
   runApp(MyApp(words,prefs));
 }
 
@@ -242,7 +236,6 @@ Future<void> showResetDialog() async {
       SchedulerBinding.instance?.addPostFrameCallback((_) => _showMyDialog());
     }
     findWords();
-    print(wordSearch(widget.words[5]!,"rope"));
   }
 
   List<FoundWord> findLen(int targetSize){
@@ -274,9 +267,6 @@ Future<void> showResetDialog() async {
   }
 
   bool wordSearch(List<String> arr, word){
-    // print("List has ${arr.length} words");
-    // print(arr[5000].codeUnitAt(4));
-    // return arr.contains("rope");
     int low = 0;
     int high = arr.length-1;
     while(low<=high){
@@ -344,7 +334,9 @@ Future<void> showResetDialog() async {
       builder: (BuildContext context){
         return AlertDialog(
           title: Text("Your score was $score"),
-          content: Column(children: [
+          content: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
             for(FoundWord w in saves)
               Text(w.word)
           ],),
