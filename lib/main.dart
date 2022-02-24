@@ -126,7 +126,7 @@ class _HomeState extends State<Home> {
               Text('4. Only Top Bottom And Left To Right',
               style: TextStyle(fontSize: 15),
               ),
-              Text('4. Play until you fill up your grid',
+              Text('5. Play until you fill up your grid',
               style: TextStyle(fontSize: 15),
               ),
             ],
@@ -150,6 +150,51 @@ class _HomeState extends State<Home> {
     },
   );
 }
+
+Future<void> showResetDialog() async {
+  return showDialog<void>(
+    context: context,
+    barrierDismissible: false, // user must tap button!
+    builder: (BuildContext context) {
+      return AlertDialog(
+        title: const Text('Are You Sure You Want To Reset?',
+        style: TextStyle(fontSize: 30, fontWeight: FontWeight.bold),
+        
+        textAlign: TextAlign.center,
+        ),
+        content: SingleChildScrollView(
+          child: ListBody(
+            children: const <Widget>[
+              Text(
+                'Your Score Will Be Set To Zero',
+                style: TextStyle(fontSize: 25,),
+                textAlign: TextAlign.center,
+                ),
+              
+            ],
+          ),
+        ),
+        actions: <Widget>[
+          TextButton(
+           style: TextButton.styleFrom(
+    primary: Colors.yellowAccent, // Text Color
+  ),
+            child: const Text('Reset',
+            style: TextStyle(fontSize: 20),
+            ),
+            
+            onPressed: () {
+              Navigator.of(context).pop();
+            },
+          ),
+        ],
+      );
+    },
+  );
+}
+
+
+
 
   @override
   void initState() {
@@ -275,10 +320,12 @@ class _HomeState extends State<Home> {
         title: const Text('Gobble'),
         leading:IconButton(onPressed: _showMyDialog, icon: Icon(Icons.help)),
         actions: [
+          IconButton(onPressed: showResetDialog, icon: Icon(Icons.refresh)),
           Padding(
             padding: const EdgeInsets.only(right: 8.0),
             child: Center(child: Text("High score: ${widget.prefs.getInt("highScore") ?? 0}", style: Theme.of(context).textTheme.headline6,)),
           ),
+          
         ],
       ),
       body: Padding(
